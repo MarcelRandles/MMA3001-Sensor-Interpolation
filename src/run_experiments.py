@@ -14,6 +14,9 @@ RESULTS_FOLDER = PROJECT_FOLDER / "results"
 
 GAP_HOURS = [0.5, 1, 2, 4, 8]
 
+START_DATE = "2024-03-02"
+END_DATE = "2024-04-29"
+PERIOD_LABEL = "March–April 2024"
 
 def calculate_errors(actual, predicted):
     """Calculate prediction errors in degrees Celsius."""
@@ -52,8 +55,8 @@ def main():
     # One preselected start per day, with different times of day.
     # No start is selected using the resulting prediction errors.
     days = pd.date_range(
-        "2024-03-02",
-        "2024-04-29",
+        START_DATE,
+        END_DATE,
         freq="D",
         tz="Australia/Melbourne",
     )
@@ -196,7 +199,7 @@ def main():
         axis.grid(alpha=0.3)
         axis.legend()
 
-    fig.suptitle("Temperature reconstruction: March–April 2024")
+    fig.suptitle(f"Temperature reconstruction: {PERIOD_LABEL}")
     fig.tight_layout()
     fig.savefig(
         RESULTS_FOLDER / "gap_experiment_errors.png",
@@ -211,8 +214,7 @@ def main():
     print("results/gap_experiment_results.csv")
     print("results/gap_experiment_summary.csv")
     print("results/gap_experiment_errors.png")
-    print("\nMay and June were not used in this experiment.")
-
+    print(f"\nExperiment period: {START_DATE} to {END_DATE}")
 
 if __name__ == "__main__":
     main()
