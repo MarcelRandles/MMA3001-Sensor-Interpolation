@@ -1,0 +1,13 @@
+{
+  "sensor_id": "6012002000869",
+  "original_readings": 29341,
+  "unique_readings": 13800,
+  "identical_duplicates_removed": 15541,
+  "start_local": "2024-02-29 17:04:56+11:00",
+  "end_local": "2024-06-14 03:45:44+10:00",
+  "minimum_temperature_c": 19.0,
+  "maximum_temperature_c": 28.5,
+  "median_interval_minutes": 10.0,
+  "largest_interval_minutes": 29.983333333333334,
+  "intervals_over_15_minutes": 1390
+}
