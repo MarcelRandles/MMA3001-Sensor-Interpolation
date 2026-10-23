@@ -1,0 +1,11 @@
+# Local Python environment
+.venv/
+
+# Original and prepared sensor data
+data/raw/
+data/processed/
+
+# Temporary Python and test files
+__pycache__/
+*.pyc
+.pytest_cache/
