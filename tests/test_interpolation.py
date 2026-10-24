@@ -52,7 +52,7 @@ def test_experiment_reconstructs_known_signals(
     """Run the actual experiment on temporary synthetic sensor data."""
     times = pd.date_range(
         "2024-03-01",
-        "2024-03-05",
+        "2024-03-08",
         freq="10min",
         tz="Australia/Melbourne",
     )
@@ -100,15 +100,18 @@ def test_experiment_reconstructs_known_signals(
 
     assert not results.empty
     assert set(results["method"]) == {
-        "Linear", "Natural cubic spline", "PCHIP"
+        "Linear",
+        "Natural cubic spline",
+        "PCHIP",
+        "Local cubic Newton",
     }
-    assert set(results["gap_hours"]) == {0.5, 1, 2, 4, 8}
+    assert set(results["gap_hours"]) == set(range(1, 49))
     assert (results["hidden_readings"] > 0).all()
 
     # Every tested outage must have a result from all three methods.
     paired = results.groupby(["gap_start", "gap_hours"])
-    assert (paired["method"].nunique() == 3).all()
-    assert (paired.size() == 3).all()
+    assert (paired["method"].nunique() == 4).all()
+    assert (paired.size() == 4).all()
 
     # Tiny rounding differences are normal in numerical calculations.
     for metric in [

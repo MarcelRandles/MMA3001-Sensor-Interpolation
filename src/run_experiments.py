@@ -7,15 +7,16 @@ import numpy as np
 import pandas as pd
 from scipy.interpolate import CubicSpline, PchipInterpolator
 
+from newton_interpolation import local_newton
 
 PROJECT_FOLDER = Path(__file__).resolve().parents[1]
 INPUT_PATH = PROJECT_FOLDER / "data/processed/temperature_clean.csv"
 RESULTS_FOLDER = PROJECT_FOLDER / "results"
 
-GAP_HOURS = [0.5, 1, 2, 4, 8]
+GAP_HOURS = list(range(1, 49))
 
 START_DATE = "2024-03-02"
-END_DATE = "2024-04-29"
+END_DATE = "2024-04-27"
 PERIOD_LABEL = "March–April 2024"
 
 def calculate_errors(actual, predicted):
@@ -123,12 +124,24 @@ def main():
             )
             spline_predictions = spline(x_hidden)
 
+            # Require two available observations on each side for Newton.
+            # If unavailable, exclude this case from ALL four methods.
+            if (
+                np.sum(x_known < x_hidden.min()) < 2
+                or np.sum(x_known > x_hidden.max()) < 2
+            ):
+                skipped_cases += 1
+                continue
+
             predictions = {
                 "Linear": linear_predictions,
                 "Natural cubic spline": spline_predictions,
                 "PCHIP": PchipInterpolator(
                     x_known, y_known, extrapolate=False
                 )(x_hidden),
+                "Local cubic Newton": local_newton(
+                    x_known, y_known, x_hidden
+                ),
             }
 
             for method, predicted in predictions.items():
@@ -176,7 +189,12 @@ def main():
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
-    for method in ["Linear", "Natural cubic spline", "PCHIP"]:
+    for method in [
+        "Linear",
+        "Natural cubic spline",
+        "PCHIP",
+        "Local cubic Newton",
+    ]:
         method_results = summary.loc[summary["method"] == method]
 
         axes[0].plot(
@@ -198,7 +216,7 @@ def main():
     ):
         axis.set_xlabel("Simulated outage duration (hours)")
         axis.set_ylabel(ylabel)
-        axis.set_xticks(GAP_HOURS)
+        axis.set_xticks([1, 6, 12, 18, 24, 30, 36, 42, 48])
         axis.grid(alpha=0.3)
         axis.legend()
 

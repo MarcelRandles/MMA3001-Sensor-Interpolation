@@ -1,0 +1,9 @@
+Platform: Windows-11-10.0.26200-SP0
+Processor: AMD64 Family 26 Model 96 Stepping 0, AuthenticAMD
+Python: 3.13.17
+NumPy: 2.5.4
+SciPy: 1.18.1
+pandas: 3.1.0
+Timing includes interpolation construction and prediction.
+CSV loading, gap selection, scoring and plotting are excluded.
+Results describe this fixed case on this computer.
