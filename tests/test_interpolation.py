@@ -100,15 +100,15 @@ def test_experiment_reconstructs_known_signals(
 
     assert not results.empty
     assert set(results["method"]) == {
-        "Linear", "Natural cubic spline"
+        "Linear", "Natural cubic spline", "PCHIP"
     }
     assert set(results["gap_hours"]) == {0.5, 1, 2, 4, 8}
     assert (results["hidden_readings"] > 0).all()
 
-    # Every tested outage must have a result from both methods.
+    # Every tested outage must have a result from all three methods.
     paired = results.groupby(["gap_start", "gap_hours"])
-    assert (paired["method"].nunique() == 2).all()
-    assert (paired.size() == 2).all()
+    assert (paired["method"].nunique() == 3).all()
+    assert (paired.size() == 3).all()
 
     # Tiny rounding differences are normal in numerical calculations.
     for metric in [
@@ -120,3 +120,38 @@ def test_experiment_reconstructs_known_signals(
             atol=1e-9,
             rtol=0,
         )
+
+
+@pytest.mark.parametrize("bad_value", [np.nan, np.inf])
+def test_cleaning_rejects_nonfinite_temperatures(bad_value):
+    """Invalid temperatures must not silently enter the analysis."""
+    from inspect_data import clean_temperature
+    data = pd.DataFrame({
+        "timestamp_seconds": [1709251200, 1709251800],
+        "temperature_c": [20.0, bad_value],
+    })
+    with pytest.raises(ValueError):
+        clean_temperature(data)
+
+
+def test_cleaning_rejects_conflicting_duplicates():
+    """Two different temperatures at one timestamp need investigation."""
+    from inspect_data import clean_temperature
+    data = pd.DataFrame({
+        "timestamp_seconds": [1709251200, 1709251200],
+        "temperature_c": [20.0, 21.0],
+    })
+    with pytest.raises(ValueError, match="Different temperatures"):
+        clean_temperature(data)
+
+
+def test_cleaning_removes_identical_duplicates_and_sorts():
+    """Check the cleaning behaviour against independently specified rows."""
+    from inspect_data import clean_temperature
+    data = pd.DataFrame({
+        "timestamp_seconds": [1709251800, 1709251200, 1709251200],
+        "temperature_c": [21.0, 20.0, 20.0],
+    })
+    result = clean_temperature(data)
+    assert result["timestamp_seconds"].tolist() == [1709251200, 1709251800]
+    assert result["temperature_c"].tolist() == [20.0, 21.0]

@@ -6,7 +6,7 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.interpolate import CubicSpline
+from scipy.interpolate import CubicSpline, PchipInterpolator
 
 from run_experiments import calculate_errors
 
@@ -77,6 +77,9 @@ def main():
             bc_type="natural",
             extrapolate=False,
         )(x[hidden]),
+        "PCHIP": PchipInterpolator(
+            x[known], y[known], extrapolate=False
+        )(x[hidden]),
     }
 
     score_rows = []
@@ -110,6 +113,7 @@ def main():
         "actual_temperature_c": y[hidden],
         "linear_prediction_c": predictions["Linear"],
         "spline_prediction_c": predictions["Natural cubic spline"],
+        "pchip_prediction_c": predictions["PCHIP"],
     })
     comparison.to_csv(
         RESULTS_FOLDER / "worst_case_predictions.csv",

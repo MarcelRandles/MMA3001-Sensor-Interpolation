@@ -5,7 +5,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.interpolate import CubicSpline
+from scipy.interpolate import CubicSpline, PchipInterpolator
 
 
 PROJECT_FOLDER = Path(__file__).resolve().parents[1]
@@ -76,7 +76,7 @@ def main():
     if not np.all(np.diff(x) > 0):
         raise ValueError("Measurement times must be unique and increasing.")
 
-    # True means this reading is hidden from BOTH interpolation methods.
+    # True means this reading is hidden from ALL interpolation methods.
     hidden = (
         (window["time"] >= gap_start)
         & (window["time"] < gap_end)
@@ -109,6 +109,9 @@ def main():
     predictions = {
         "Linear": linear_prediction,
         "Natural cubic spline": spline_prediction,
+        "PCHIP": PchipInterpolator(
+            x[known], y[known], extrapolate=False
+        )(x[hidden]),
     }
 
     rows = []
@@ -133,6 +136,7 @@ def main():
         "actual_temperature_c": y[hidden],
         "linear_prediction_c": linear_prediction,
         "spline_prediction_c": spline_prediction,
+        "pchip_prediction_c": predictions["PCHIP"],
     })
 
     predictions_path = RESULTS_FOLDER / "interpolation_demo_predictions.csv"

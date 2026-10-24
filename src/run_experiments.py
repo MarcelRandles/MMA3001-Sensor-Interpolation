@@ -5,7 +5,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.interpolate import CubicSpline
+from scipy.interpolate import CubicSpline, PchipInterpolator
 
 
 PROJECT_FOLDER = Path(__file__).resolve().parents[1]
@@ -126,6 +126,9 @@ def main():
             predictions = {
                 "Linear": linear_predictions,
                 "Natural cubic spline": spline_predictions,
+                "PCHIP": PchipInterpolator(
+                    x_known, y_known, extrapolate=False
+                )(x_hidden),
             }
 
             for method, predicted in predictions.items():
@@ -173,7 +176,7 @@ def main():
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
-    for method in ["Linear", "Natural cubic spline"]:
+    for method in ["Linear", "Natural cubic spline", "PCHIP"]:
         method_results = summary.loc[summary["method"] == method]
 
         axes[0].plot(
@@ -211,9 +214,9 @@ def main():
     print(summary.to_string(index=False, float_format="%.4f"))
     print(f"\nSkipped outage cases: {skipped_cases}")
     print("\nCreated:")
-    print("results/gap_experiment_results.csv")
-    print("results/gap_experiment_summary.csv")
-    print("results/gap_experiment_errors.png")
+    print(RESULTS_FOLDER / "gap_experiment_results.csv")
+    print(RESULTS_FOLDER / "gap_experiment_summary.csv")
+    print(RESULTS_FOLDER / "gap_experiment_errors.png")
     print(f"\nExperiment period: {START_DATE} to {END_DATE}")
 
 if __name__ == "__main__":
